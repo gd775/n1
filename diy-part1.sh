@@ -1,9 +1,22 @@
 #!/bin/bash
-#=================================================
-# Description: Build OpenWrt using GitHub Actions
-# The script is maintained by gd772
+#
+# Copyright (c) 2019-2020 P3TERX <https://p3terx.com>
+#
+# This is free software, licensed under the MIT License.
+# See /LICENSE for more information.
+#
+# https://github.com/P3TERX/Actions-OpenWrt
+# File name: diy-part1.sh
+# Description: OpenWrt DIY script part 1 (Before Update feeds)
+#
 
-# echo '删除重复多余主题'
+# Uncomment a feed source
+#sed -i 's/^#\(.*helloworld\)/\1/' feeds.conf.default
+
+# Add a feed source
+#sed -i '$a src-git lienol https://github.com/Lienol/openwrt-package' feeds.conf.default
+#!/bin/bash
+#============================================================
 rm -rf ./feeds/freifunk/themes
 rm -rf ./package/lean/luci-theme-netgear
 rm -rf ./package/lean/luci-theme-argon
@@ -24,19 +37,17 @@ sed -i "s/192.168.1.1/192.168.123.2/g" package/base-files/files/bin/config_gener
 sed -i "s/OpenWrt/N1/g" package/base-files/files/bin/config_generate
 
 # echo '替换系统文件'
-curl -fsSL https://raw.githubusercontent.com/gd0772/diy/main/public/zzz-default-settings > ./package/lean/default-settings/files/zzz-default-settings
-curl -fsSL https://raw.githubusercontent.com/gd0772/diy/main/N1/index.htm > ./feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/index.htm
+curl -fsSL https://raw.githubusercontent.com/gd0772/patch/main/zzz-default-settings > ./package/lean/default-settings/files/zzz-default-settings
 
 # echo '添加 SSR Plus+'
-git clone https://github.com/Mattraks/helloworld.git ./package/diy/ssrplus
+git clone https://github.com/fw876/helloworld package/diy/ssrplus
 # echo '添加 小猫咪'
-git clone https://github.com/vernesong/OpenClash.git ./package/diy/OpenClash
+git clone https://github.com/vernesong/OpenClash package/diy/OpenClash
 # echo '添加 Passwall'
-git clone https://github.com/xiaorouji/openwrt-passwall.git ./package/diy/passwall
+git clone https://github.com/xiaorouji/openwrt-passwall package/diy/passwall
 # echo '添加 HelloWorld'
-svn co https://github.com/jerrykuku/luci-app-vssr/trunk/ package/diy/luci-app-vssr
-# echo '添加 京东签到'
-svn co https://github.com/jerrykuku/luci-app-jd-dailybonus/trunk/ package/diy/luci-app-jd-dailybonus
+git clone https://github.com/jerrykuku/luci-app-vssr package/diy/luci-app-vssr
+git clone https://github.com/jerrykuku/lua-maxminddb.git package/diy/lua-maxminddb
 # echo '添加 SmartDNS'
 git clone https://github.com/pymumu/luci-app-smartdns.git -b lede ./package/diy/luci-app-smartdns
 git clone https://github.com/pymumu/openwrt-smartdns.git ./feeds/packages/net/smartdns
@@ -224,14 +235,11 @@ sed -i 's/services/vpn/g' package/lean/luci-app-v2ray-server/luasrc/view/v2ray_s
 sed -i 's/services/vpn/g' package/lean/luci-app-v2ray-server/luasrc/view/v2ray_server/v2ray.htm
 
 # echo '添加自定义防火墙说明'
-curl -fsSL https://raw.githubusercontent.com/gd0772/diy/main/public/firewall.user > ./package/network/config/firewall/files/firewall.user
+curl -fsSL https://raw.githubusercontent.com/gd0772/patch/main/firewall.user > ./package/network/config/firewall/files/firewall.user
 
 # echo '版本号更新'
 sed -i "s/R21.2.1/R21.2.1 $(TZ=UTC-8 date "+%Y.%m.%d") Compilde by gd772/g" package/lean/default-settings/files/zzz-default-settings
 
-# echo '更换内核'
-#sed -i 's/KERNEL_PATCHVER:=5.4/KERNEL_PATCHVER:=4.19/g' ./target/linux/x86/Makefile
-#sed -i 's/KERNEL_TESTING_PATCHVER:=5.4/KERNEL_TESTING_PATCHVER:=4.19/g' ./target/linux/x86/Makefile
-
 # echo '更新feeds'
-./scripts/feeds update -i
+./scripts/feeds update -a
+./scripts/feeds install -a
